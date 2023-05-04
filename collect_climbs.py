@@ -41,7 +41,7 @@ def main():
         climbs += get_climbs(f'moon_files/moon{i}.json')
 
     print(f'exporting {len(climbs)} climbs')
-    with open('climbs.json', 'w') as f:
+    with open('data/climbs.json', 'w') as f:
         json.dump(climbs, f, indent = 4)
 
 if __name__ == '__main__':

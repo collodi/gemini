@@ -5,7 +5,7 @@ import torch.nn.functional as F
 grades = ['6A+', '6B', '6B+', '6C', '6C+', '7A', '7A+', '7B', '7B+', '7C', '7C+', '8A', '8A+', '8B', '8B+']
 
 def get_climbs():
-    with open('climbs.json') as f:
+    with open('data/climbs.json') as f:
         return json.load(f)
 
 def main():
@@ -22,7 +22,7 @@ def main():
     nodes = F.normalize(nodes, p = 1, dim = 1)
 
     print('exporting nodes.torch')
-    torch.save(nodes, 'nodes.torch')
+    torch.save(nodes, 'data/nodes.torch')
 
 if __name__ == '__main__':
     main()

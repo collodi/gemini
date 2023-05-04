@@ -40,7 +40,7 @@ def main():
             edges[n1, n2] = calc_dist(h1, h2)
 
     print('exporting distances.torch')
-    torch.save(edges, 'distances.torch')
+    torch.save(edges, 'data/distances.torch')
 
 if __name__ == '__main__':
     main()
