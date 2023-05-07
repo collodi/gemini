@@ -43,7 +43,7 @@ def adjust_edge_weights(edges, reach):
     return adjusted
 
 def build_edges(edges, eps):
-    cnt = (edges > eps).count_nonzero() // 2
+    cnt = (edges > eps).count_nonzero().div(2, rounding_mode = 'trunc')
     edge_index = torch.zeros((2, cnt), dtype = torch.long)
     weights = torch.zeros(cnt, dtype = torch.float32)
 
