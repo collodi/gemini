@@ -1,8 +1,6 @@
 import torch
 from torch import linalg as LA
 
-holds = [(r, c) for c in range(11) for r in range(18)]
-
 def hold_num(hold):
     r, c = hold
     return r * 11 + c
@@ -31,6 +29,8 @@ def calc_dist(h1, h2):
 def main():
     print('calculating hold distances')
     edges = torch.zeros((198, 198), dtype = torch.float32)
+    holds = [(r, c) for c in range(11) for r in range(18)]
+
 
     for h1 in holds:
         for h2 in holds:
