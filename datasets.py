@@ -108,7 +108,7 @@ class RandomGraphs(Dataset):
             r = torch.rand((nodes.size()[0], 1))
             graph_nodes_random = torch.cat((grade_nodes, r), dim = 1)
 
-            data = Data(x = graph_nodes_random, edge_index = edge_index, edge_attr = weights)
+            data = Data(graph_nodes_random, edge_index, weights)
             torch.save(data, os.path.join(grade_dir, f'{i}.graph'))
 
     def len(self):
@@ -145,7 +145,7 @@ class MoonClimbs(Dataset):
 
         for i, climb in enumerate(climbs):
             nodes = build_climb_nodes(climb)
-            data = Data(x = nodes, edge_index = edge_index, edge_attr = weights, climb = climb)
+            data = Data(nodes, edge_index, weights, climb = climb)
             torch.save(data, os.path.join(grade_dir, f'{i}.climb'))
     
     def len(self):
