@@ -1,2 +1,4 @@
 moon_files/*.json
 /**/*.graph
+/**/*.climb
+/**/*.pt
