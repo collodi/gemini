@@ -8,11 +8,15 @@ from scipy.stats import norm
 EPSILON = 0.01
 GRADES = ['6A+', '6B', '6B+', '6C', '6C+', '7A', '7A+', '7B', '7B+', '7C', '7C+', '8A', '8A+', '8B', '8B+']
 
+# .nodes contains data for generator
+# each node is represented by 5 numbers for grade distribution and 1 number for randomness
+# this file is flexible for loading the dataset with a custom reach parameter
+
 # .climb contains data for discriminator
 # each node is represented by a softmax(len 2 vector) [off, on]
 
 # .graph contains data for generator
-# each node is represented by 5 numbers for grade distribution and 1 number for randomness
+# basically .nodes + edges (given reach)
 
 def get_climbs():
     with open('data/climbs.json') as f:
@@ -33,7 +37,7 @@ def ensure_elem_larger(x, i):
 
 def build_climb_nodes(climb):
     nodes = torch.rand(198, 2)
-    # maybe using softmax will make discriminator perform better?
+    # IDEA maybe using softmax will make discriminator perform better?
     nodes = F.normalize(nodes, p = 1, dim = 1)
 
     holds = set(climb['holds'])
@@ -87,18 +91,18 @@ class RandomGraphs(Dataset):
         self.reach = reach
         self.num = num
 
+        edges = torch.load('data/distances.torch')
+        self.edge_index, self.weights = build_edges(edges, self.reach)
+
         super().__init__(root)
     
     @property
     def processed_file_names(self):
-        return [os.path.join(self.grade, f'{i}.graph') for i in range(self.num)]
+        return [os.path.join(self.grade, f'{i}.nodes') for i in range(self.num)]
     
     def process(self):
         nodes = torch.load('data/nodes.torch')
         grade_nodes = build_graph_nodes(nodes, self.grade)
-
-        edges = torch.load('data/distances.torch')
-        edge_index, weights = build_edges(edges, self.reach)
 
         grade_dir = os.path.join(self.processed_dir, self.grade)
         if not os.path.exists(grade_dir):
@@ -107,15 +111,14 @@ class RandomGraphs(Dataset):
         for i in range(self.num):
             r = torch.rand((nodes.size()[0], 1))
             graph_nodes_random = torch.cat((grade_nodes, r), dim = 1)
-
-            data = Data(graph_nodes_random, edge_index, weights)
-            torch.save(data, os.path.join(grade_dir, f'{i}.graph'))
+            torch.save(graph_nodes_random, os.path.join(grade_dir, f'{i}.nodes'))
 
     def len(self):
         return self.num
     
     def get(self, i):
-        return torch.load(os.path.join(self.processed_dir, self.grade, f'{i}.graph'))
+        nodes = torch.load(os.path.join(self.processed_dir, self.grade, f'{i}.nodes'))
+        return Data(nodes, self.edge_index, self.weights)
     
 class MoonClimbs(Dataset):
     def __init__(self, root, grade):
@@ -156,6 +159,7 @@ class MoonClimbs(Dataset):
     
 def main():
     moon6aplus = MoonClimbs('data/moonclimbs', '6A+')
+    random6aplus = RandomGraphs('data/randoms', '6A+', 70, 100)
     
 if __name__ == '__main__':
     main()

@@ -1,4 +1,7 @@
 moon_files/*.json
 /**/*.graph
 /**/*.climb
+/**/*.nodes
 /**/*.pt
+
+/**/*.pyc
