@@ -1,4 +1,5 @@
 import torch
+from datasets import RandomGraphs
 
 torch.set_printoptions(sci_mode=False)
 
@@ -16,7 +17,7 @@ def main():
 
 def print_vector(vec : torch.Tensor):
     for x in vec:
-        print(f'{x.item():6f}', end = ' ')
+        print(f'{x.item():.6f}', end = ' ')
 
     print()
 

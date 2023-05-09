@@ -2,9 +2,11 @@ import torch
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
+torch.set_printoptions(sci_mode = False)
+
 def main():
-    climb = 'data/fakeclimbs/processed/7A+/70/1.climb'
-    #climb = 'data/moonclimbs/processed/7A+/0.climb'
+    climb = 'data/fakeclimbs/processed/6A+/70/1.climb'
+    #climb = 'data/moonclimbs/processed/6A+/0.climb'
 
     nrows = 18
     ncols = 11
@@ -24,7 +26,7 @@ def main():
             hold = graph.x[i]
             hold_on = hold[1] > hold[0]
 
-            print(hold)
+            print(f'{hold[0]:.4f} {hold[1]:.4f}')
 
             if hold_on:
                 x, y = xs[c], ys[r]
