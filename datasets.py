@@ -1,9 +1,11 @@
 import os
 import json
+from typing import List, Tuple, Union
 import torch
 import torch.nn.functional as F
 from torch_geometric.data import Data, Dataset
 from scipy.stats import norm
+from generator import ClimbGenerator
 
 EPSILON = 0.01
 GRADES = ['6A+', '6B', '6B+', '6C', '6C+', '7A', '7A+', '7B', '7B+', '7C', '7C+', '8A', '8A+', '8B', '8B+']
@@ -42,7 +44,7 @@ def build_climb_nodes(climb):
 
     holds = set(climb['holds'])
     for i in range(198):
-        mx_i = 1 if i in holds else 0
+        mx_i = 1 if i in holds else 0 # [off, on]
         nodes[i] = ensure_elem_larger(nodes[i], mx_i)
 
     return nodes
@@ -84,6 +86,45 @@ def build_graph_nodes(nodes, grade):
     i = GRADES.index(grade)
     nodes = F.pad(nodes, (2, 2))
     return nodes[:, i:i+5]
+
+class FakeClimbs(Dataset):
+    def __init__(self, root, grade, reach, *, delete_old = False):
+        self.grade = grade
+        self.reach = reach
+
+        grade_i = GRADES.index(grade)
+        self.num = get_grade_counts()[grade_i]
+
+        if delete_old:
+            for fn in self.processed_file_names:
+                fn = os.path.join(root, 'processed', fn)
+                if os.path.exists(fn):
+                    os.remove(fn)
+
+        super().__init__(root)
+
+    @property
+    def processed_file_names(self):
+        return [os.path.join(self.grade, str(self.reach), f'{i}.climb') for i in range(self.num)]
+
+    def process(self):
+        graphs = RandomGraphs('data/randoms', self.grade, self.reach, self.num)
+
+        category_dir = os.path.join(self.processed_dir, self.grade, str(self.reach))
+        if not os.path.exists(category_dir):
+            os.makedirs(category_dir)
+
+        generator = ClimbGenerator()
+        for i, graph in enumerate(graphs):
+            climb = generator(graph)
+            torch.save(climb, os.path.join(category_dir, f'{i}.climb'))
+
+    def len(self):
+        return self.num
+    
+    def get(self, i):
+        fn = os.path.join(self.processed_dir, self.grade, str(self.reach), f'{i}.climb')
+        return torch.load(fn)
 
 class RandomGraphs(Dataset):
     def __init__(self, root, grade, reach, num):
@@ -155,11 +196,12 @@ class MoonClimbs(Dataset):
         return self.num
     
     def get(self, i):
-        return torch.load(os.path.join(self.processed_dir, self.grade, f'{i}.climb'))
+        fn = os.path.join(self.processed_dir, self.grade, f'{i}.climb')
+        return torch.load(fn)
     
 def main():
-    moon6aplus = MoonClimbs('data/moonclimbs', '6A+')
-    random6aplus = RandomGraphs('data/randoms', '6A+', 70, 100)
+    moons = MoonClimbs('data/moonclimbs', '6A+')
+    fakes = FakeClimbs('data/fakeclimbs', '6A+', 70, delete_old = True)
     
 if __name__ == '__main__':
     main()

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch_geometric.nn as gnn
-from torch_geometric.data import Batch
+from torch_geometric.data import Data, Batch
 
 class ClimbGenerator(nn.Module):
     def __init__(self):
@@ -26,10 +26,12 @@ class ClimbGenerator(nn.Module):
         edge_index = data.edge_index
         weights = data.edge_attr
 
-        print(data.ptr)
-
         x = self.conv(x, edge_index, weights)
         x = F.softmax(x, dim = 1)
+        
+        if type(data) is Data:
+            return Data(x, edge_index, weights)
+        
         return Batch(x, edge_index, weights, batch = data.batch, ptr = data.ptr)
     
 def main():

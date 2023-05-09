@@ -10,7 +10,7 @@ def get_climbs():
 
 def main():
     print('reading climbs')
-    climbs = get_climbs()[:1]
+    climbs = get_climbs()
 
     print('calculating node representations')
     nodes = torch.zeros((198, len(grades)), dtype=torch.float32)
