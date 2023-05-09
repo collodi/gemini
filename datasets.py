@@ -88,7 +88,7 @@ def build_graph_nodes(nodes, grade):
     return nodes[:, i:i+5]
 
 class FakeClimbs(Dataset):
-    def __init__(self, root, grade, reach, *, delete_old = False):
+    def __init__(self, root, generator, grade, reach, *, delete_old = False):
         self.grade = grade
         self.reach = reach
 
@@ -101,6 +101,7 @@ class FakeClimbs(Dataset):
                 if os.path.exists(fn):
                     os.remove(fn)
 
+        self.generator = generator or ClimbGenerator()
         super().__init__(root)
 
     @property
@@ -114,9 +115,8 @@ class FakeClimbs(Dataset):
         if not os.path.exists(category_dir):
             os.makedirs(category_dir)
 
-        generator = ClimbGenerator()
         for i, graph in enumerate(graphs):
-            climb = generator(graph)
+            climb = self.generator(graph)
             torch.save(climb, os.path.join(category_dir, f'{i}.climb'))
 
     def len(self):
@@ -201,7 +201,7 @@ class MoonClimbs(Dataset):
     
 def main():
     moons = MoonClimbs('data/moonclimbs', '6A+')
-    fakes = FakeClimbs('data/fakeclimbs', '6A+', 70, delete_old = True)
+    fakes = FakeClimbs('data/fakeclimbs', None, '6A+', 70, delete_old = True)
     
 if __name__ == '__main__':
     main()
