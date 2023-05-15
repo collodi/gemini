@@ -9,17 +9,17 @@ class ClimbGenerator(nn.Module):
         super().__init__()
 
         self.conv = gnn.Sequential('x, edge_index, edge_weight', [
-            (gnn.GraphConv(6, 20), 'x, edge_index, edge_weight -> x'),
+            (gnn.GraphConv(5, 50), 'x, edge_index, edge_weight -> x'),
             nn.ReLU(),
-            (gnn.GraphConv(20, 20), 'x, edge_index, edge_weight -> x'),
+            (gnn.GraphConv(50, 50), 'x, edge_index, edge_weight -> x'),
             nn.ReLU(),
-            (gnn.GraphConv(20, 20), 'x, edge_index, edge_weight -> x'),
+            (gnn.GraphConv(50, 50), 'x, edge_index, edge_weight -> x'),
             nn.ReLU(),
-            (gnn.GraphConv(20, 20), 'x, edge_index, edge_weight -> x'),
+            (gnn.GraphConv(50, 50), 'x, edge_index, edge_weight -> x'),
             nn.ReLU(),
-            (gnn.GraphConv(20, 20), 'x, edge_index, edge_weight -> x'),
+            (gnn.GraphConv(50, 50), 'x, edge_index, edge_weight -> x'),
             nn.ReLU(),
-            (gnn.GraphConv(20, 20), 'x, edge_index, edge_weight -> x'),
+            (gnn.GraphConv(50, 20), 'x, edge_index, edge_weight -> x'),
             nn.ReLU(),
             (gnn.GraphConv(20, 15), 'x, edge_index, edge_weight -> x'),
             nn.ReLU(),
@@ -31,12 +31,23 @@ class ClimbGenerator(nn.Module):
             nn.ReLU(),
         ])
 
+        self.linear = nn.Sequential(
+            nn.Linear(396, 396),
+            nn.ReLU(),
+            nn.Linear(396, 396),
+            nn.ReLU(),
+            nn.Linear(396, 396),
+        )
+
     def forward(self, data):
         x = data.x
         edge_index = data.edge_index
         weights = data.edge_attr
 
         x = self.conv(x, edge_index, weights)
+        x = x.view(-1, 198 * 2) # [b_size * num_nodes, 2] -> [b_size, num_nodes * 2]
+        x = self.linear(x)
+        x = x.view(-1, 2) # [b_size, num_nodes * 2] -> [b_size * num_nodes, 2]
         x = F.softmax(x, dim = 1)
         
         if type(data) is Data:

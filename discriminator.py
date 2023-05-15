@@ -17,24 +17,18 @@ class MoonDiscriminator(nn.Module):
             nn.ReLU(),
             (gnn.GraphConv(10, 5), 'x, edge_index, edge_weight -> x'),
             nn.ReLU(),
-            (gnn.GraphConv(5, 2), 'x, edge_index, edge_weight -> x'),
+            (gnn.GraphConv(5, 1), 'x, edge_index, edge_weight -> x'),
             nn.ReLU(),
         ])
 
         # IDEA maybe gradual graph pooling is more efficient and accurate
         self.linear = nn.Sequential(
-            nn.Linear(396, 200),
-            nn.ReLU(),
-            nn.Linear(200, 100),
+            nn.Linear(198, 100),
             nn.ReLU(),
             nn.Linear(100, 50),
             nn.ReLU(),
-            nn.Linear(50, 10),
-            nn.ReLU(),
-            nn.Linear(10, 2),
+            nn.Linear(50, 1),
         )
-
-        self.out = nn.Softmax()
 
     def forward(self, data):
         x = data.x
@@ -42,10 +36,10 @@ class MoonDiscriminator(nn.Module):
         weights = data.edge_attr
 
         x = self.conv(x, edge_index, weights)
-        x = x.view(-1, 198 * 2)
+        x = x.view(-1, 198)
         x = self.linear(x)
 
-        return F.softmax(x, dim = 1)
+        return F.sigmoid(x)
     
 def main():
     from datasets import MoonClimbs
