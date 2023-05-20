@@ -31,7 +31,6 @@ def main():
     edges = torch.zeros((198, 198), dtype = torch.float32)
     holds = [(r, c) for c in range(11) for r in range(18)]
 
-
     for h1 in holds:
         for h2 in holds:
             n1 = hold_num(h1)
