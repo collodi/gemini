@@ -53,11 +53,12 @@ def generate_random_graph(template):
 
 def generate_template_graph(nodes, edges, grade, reach):
     x = build_graph_nodes(nodes, grade)
+    x = add_randomness(x)
     edge_index, weights = build_edges(edges, reach)
     return Data(x, edge_index, weights)
 
 def add_randomness(tensor):
-    return F.relu(norm(tensor, tensor / 2))
+    return F.relu(torch.normal(tensor, tensor / 2))
 
 def select_random_edges(graph):
     r = torch.rand_like(graph.edge_attr)
@@ -79,7 +80,7 @@ def main():
     net = ClimbGenerator()
     
     for i in range(3):
-        random_template = generate_random_graph(edges, reach)
+        random_template = generate_random_graph(template)
         print(random_template.num_edges)
 
         climb = net(random_template)
