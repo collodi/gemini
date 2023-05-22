@@ -12,13 +12,13 @@ class ClimbGenerator(nn.Module):
 
         self.conv = gnn.Sequential('x, edge_index, edge_weight', [
             (gnn.GraphConv(20, 20), 'x, edge_index, edge_weight -> x'),
-            nn.ReLU(inplace = True),
+            nn.ReLU(),
             (gnn.GraphConv(20, 10), 'x, edge_index, edge_weight -> x'),
-            nn.ReLU(inplace = True),
+            nn.ReLU(),
             (gnn.GraphConv(10, 10), 'x, edge_index, edge_weight -> x'),
-            nn.ReLU(inplace = True),
+            nn.ReLU(),
             (gnn.GraphConv(10, 5), 'x, edge_index, edge_weight -> x'),
-            nn.ReLU(inplace = True),
+            nn.ReLU(),
             (gnn.GraphConv(5, 2), 'x, edge_index, edge_weight -> x'),
         ])
 

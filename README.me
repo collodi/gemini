@@ -1,0 +1,11 @@
+build_climbs_json.py - build climbs from moon files
+build_nodes_torch.py - leanrs hold embeddings based on occurence on same boulder (output: data/nodes.torch)
+build_distances_torch.py - calculates distances among holds (output: data/distances.torch)
+
+datasets.py - generate moonclimbs representations (need: data/climbs.json)
+train.py - train the generator (def.d in generator.py) and discriminator (def.d in discriminator.py)
+
+template_graph.py - generates template graphs used as inputs for the generator (used w/ import)
+visualize.py - visualizes a climb representation graph on the MoonBoard
+
+test.py - used for temporary tests during dev
