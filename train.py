@@ -7,7 +7,7 @@ from discriminator import MoonDiscriminator
 from torch_geometric.data import Batch
 from torch_geometric.loader import DataLoader
 from template_graph import generate_template_graph, generate_random_graph
-from visualize import visualize
+from visualize import visualize_climb
 
 torch.set_printoptions(sci_mode = False)
 
@@ -39,10 +39,10 @@ def main():
     real_loader = DataLoader(real_dataset, batch_size = 5, shuffle = True)
 
     climb = netG(fixed_graph1).detach().cpu()
-    visualize(climb)
+    visualize_climb(climb)
 
     climb = netG(fixed_graph2).detach().cpu()
-    visualize(climb)
+    visualize_climb(climb)
 
     nepochs = 2
     for epoch in range(nepochs):
@@ -97,10 +97,10 @@ def main():
 
         with torch.no_grad():
             climb = netG(fixed_graph1).detach().cpu()
-            visualize(climb)
+            visualize_climb(climb)
 
             climb = netG(fixed_graph2).detach().cpu()
-            visualize(climb)
+            visualize_climb(climb)
 
 def save_generator(net):
     torch.save(net.state_dict(), G_FN)

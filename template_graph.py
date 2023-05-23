@@ -14,7 +14,7 @@ def build_graph_nodes(nodes, grade):
     return nodes[:, i:i+5]
 
 def adjust_edge_weights(edges, reach):
-    D = norm(loc = reach / 2, scale = 7.875)
+    D = norm(loc = reach, scale = 7.875)
 
     adjusted = torch.zeros_like(edges)
     nrows, ncols = edges.size()
@@ -68,7 +68,7 @@ def select_random_edges(graph):
 
 def main():
     from generator import ClimbGenerator
-    from visualize import visualize
+    from visualize import visualize_climb
 
     nodes = torch.load('data/nodes.torch')
     edges = torch.load('data/distances.torch')
@@ -85,7 +85,7 @@ def main():
 
         climb = net(random_template)
         print(climb.x)
-        visualize(climb)
+        visualize_climb(climb)
 
 if __name__ == '__main__':
     main()

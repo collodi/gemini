@@ -7,6 +7,7 @@ grades = ['6A+', '6B', '6B+', '6C', '6C+', '7A', '7A+', '7B', '7B+', '7C', '7C+'
 
 hold_cnt = 198
 climb_cnt = 24227
+embed_size = 10
 
 def get_climbs():
     with open('data/climbs.json') as f:
@@ -16,8 +17,8 @@ class HoldEmbedding(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.h_embed = nn.Embedding(hold_cnt, 20)
-        self.c_embed = nn.Embedding(climb_cnt, 20)
+        self.h_embed = nn.Embedding(hold_cnt, embed_size)
+        self.c_embed = nn.Embedding(climb_cnt, embed_size)
 
     def forward(self, holds, climb):
         hold_vectors = self.h_embed(holds)
@@ -61,7 +62,6 @@ def train(m, opt, loss, b_size, climbs):
         if i % 250 == 0:
             print(f'{i * b_size} / {climb_cnt}: {err.item():.6f}')
 
-
 def main():
     print('reading climbs')
     climbs = get_climbs()
@@ -72,7 +72,7 @@ def main():
     loss = nn.BCELoss()
 
     b_size = 1
-    n_epochs = 1000
+    n_epochs = 30
 
     for epoch in range(n_epochs):
         print(f'=== epoch {epoch}')
