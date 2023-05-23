@@ -3,7 +3,7 @@ import json
 import torch
 import torch.nn.functional as F
 from torch_geometric.data import Data, Dataset
-from template_graph import build_edges, add_randomness
+from template_graph import adjust_edge_weights
 
 EPSILON = 0.01
 GRADES = ['6A+', '6B', '6B+', '6C', '6C+', '7A', '7A+', '7B', '7B+', '7C', '7C+', '8A', '8A+', '8B', '8B+']
@@ -20,24 +20,25 @@ def get_grade_counts():
     climbs = [x for x in climbs if x['method'] == 'Feet follow hands']
     return [sum(1 for x in climbs if x['grade'] == grade) for grade in GRADES]
 
-def ensure_elem_larger(x, i):
-    j = (i + 1) % 2
-    if x[i] >= x[j]:
-        return x.clone()
-    
-    return x.flip([0])
+def get_edges(edges, holds):
+    n = len(holds)
+    cnt = n * (n - 1)
 
-def build_climb_nodes(climb):
-    nodes = torch.rand(198, 2)
-    # IDEA maybe using softmax will make discriminator perform better?
-    nodes = F.normalize(nodes, p = 1, dim = 1)
+    edge_idx = torch.zeros((2, cnt), dtype = torch.long)
+    weights = torch.zeros(cnt, dtype = torch.float32)
 
-    holds = set(climb['holds'])
-    for i in range(198):
-        mx_i = 1 if i in holds else 0 # [off, on]
-        nodes[i] = ensure_elem_larger(nodes[i], mx_i)
+    k = 0
+    for i, h1 in enumerate(holds):
+        for j, h2 in enumerate(holds):
+            if i == j:
+                continue
 
-    return nodes
+            edge_idx[0, k] = i
+            edge_idx[1, k] = j
+            weights[k] = edges[h1, h2]
+            k += 1
+
+    return edge_idx, weights
 
 class MoonClimbs(Dataset):
     def __init__(self, root, grade):
@@ -58,19 +59,24 @@ class MoonClimbs(Dataset):
         climbs = [x for x in climbs if x['method'] == 'Feet follow hands']
         climbs = [x for x in climbs if x['grade'] == self.grade]
 
+        nodes = torch.load('data/nodes.torch')
+
         edges = torch.load('data/distances.torch')
-        edge_index, weights = build_edges(edges, self.reach)
-        weights = add_randomness(weights)
+        edges = adjust_edge_weights(edges, self.reach)
 
         grade_dir = os.path.join(self.processed_dir, self.grade)
         if not os.path.exists(grade_dir):
             os.makedirs(grade_dir)
 
         for i, climb in enumerate(climbs):
-            nodes = build_climb_nodes(climb)
-            data = Data(nodes, edge_index, weights, climb = climb)
+            holds = climb['holds']
+
+            climb_nodes = nodes[holds]
+            edge_idx, weights = get_edges(edges, holds)
+
+            data = Data(climb_nodes, edge_idx, weights, climb = climb)
             torch.save(data, os.path.join(grade_dir, f'{i}.climb'))
-    
+
     def len(self):
         return self.num
     
