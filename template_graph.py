@@ -1,9 +1,7 @@
 import torch
 import torch.nn.functional as F
-import torch.nn as nn
 
 from torch_geometric.data import Data
-from scipy.stats import norm
 
 EPSILON = 0.01
 GRADES = ['6A+', '6B', '6B+', '6C', '6C+', '7A', '7A+', '7B', '7B+', '7C', '7C+', '8A', '8A+', '8B', '8B+']
@@ -14,14 +12,12 @@ def build_graph_nodes(nodes, grade):
     return nodes[:, i:i+5]
 
 def adjust_edge_weights(edges, reach):
-    D = norm(loc = reach, scale = 7.875)
-
     adjusted = torch.zeros_like(edges)
     nrows, ncols = edges.size()
     for i in range(nrows):
         for j in range(ncols):
-            v = edges[i, j]
-            adjusted[i, j] = D.cdf(v + 2) - D.cdf(v - 2)
+            x = edges[i, j]
+            adjusted[i, j] = -x / (2. * reach) + 1.
 
     return adjusted
 

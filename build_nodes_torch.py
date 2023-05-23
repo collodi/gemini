@@ -22,18 +22,15 @@ class HoldEmbedding(nn.Module):
 
     def forward(self, holds, climb):
         hold_vectors = self.h_embed(holds)
-        hold_vectors = F.normalize(hold_vectors)
-
         climb_vector = self.c_embed(climb)
-        climb_vector = F.normalize(climb_vector)
 
         dots = torch.mm(climb_vector, hold_vectors.t())
         return F.sigmoid(dots)
 
 def export_nodes(m):
     holds = torch.arange(198, dtype = torch.long)
-    nodes = F.normalize(m.h_embed(holds))
-    torch.save(nodes, 'data/nodes.torch')
+    nodes = m.h_embed(holds)
+    torch.save(nodes.detach(), 'data/nodes.torch')
 
 def holds_in_climb(holds, climb, all_climbs):
     out = [(h in all_climbs[climb]['holds']) for h in holds]
@@ -71,8 +68,8 @@ def main():
     opt = torch.optim.Adam(m.parameters())
     loss = nn.BCELoss()
 
-    b_size = 1
-    n_epochs = 30
+    b_size = 5
+    n_epochs = 20
 
     for epoch in range(n_epochs):
         print(f'=== epoch {epoch}')
